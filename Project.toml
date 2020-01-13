@@ -1,0 +1,9 @@
+name = "Brokerages"
+uuid = "17266b6e-feb9-49b2-89f6-6dff26db6053"
+authors = ["Sebastian Rollen <sebastian.rollen@betterment.com>"]
+version = "0.1.0"
+
+[deps]
+Markets = "e289261d-1a32-4d56-985b-5cdfc675b408"
+TradingBase = "1e56c13b-5444-4379-9737-7aa7ad39eab5"
+UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
