@@ -40,8 +40,13 @@ function add_position_from_order!(b::SingleAccountBrokerage, o::Order)
     !isnothing(p) && push!(b.account.positions, p)
 end
 
+function cancel_order!(b::AbstractBrokerage, o::Order)
+    o.canceled_at = get_clock(m)
+    o.status = "canceled"
+end
+
 function process_order!(b::AbstractBrokerage, o::Order)
-    if (o.status == "filled" || o.status == "partially filled")
+    if o.status == "filled" || o.status == "partially filled"
         add_position_from_order!(b, o)
     end
 end
@@ -58,9 +63,20 @@ function transmit_order!(o::AbstractOrder, ::MarketOrder, m::AbstractMarket)
 end
 
 function transmit_order!(o::AbstractOrder, ::LimitOrder, m::AbstractMarket)
-    if (o.quantity > 0 && get_price(m, o.symbol) <= o.limit_price) ||
-        (o.quantity < 0 && get_price(m, o.symbol) >= o.limit_price)
+    if (quantity(o) > 0 && get_price(m, symbol(o)) <= limit_price(o)) ||
+        (quantity(o) < 0 && get_price(m, symbol(o)) >= limit_price(o))
         execute_order!(o, m)
+    elseif duration(o) in [FOK, IOC]
+        cancel!(o)
+    end
+end
+
+function transmit_order!(o::AbstractOrder, ::StopOrder, m::AbstractMarket)
+    if (quantity(o) > 0 && get_price(m, symbol(o)) >= limit_price(o)) ||
+        (quantity(o) < 0 && get_price(m, symbol(o)) <= limit_price(o))
+        execute_order!(o, m)
+    elseif duration(o) in [FOK, IOC]
+        cancel!(o)
     end
 end
 
@@ -92,14 +108,13 @@ function submit_order(b::SingleAccountBrokerage, oi::OrderIntent)
     return o
 end
 
-function cleanup_orders!(os::Vector{Order}, m::AbstractMarket)
+function cleanup_orders!(b::AbstractBrokerage, os::Vector{Order})
     for o in os
         if o.status ∉ ["filled", "canceled", "expired"]
             if o.time_in_force == GTC
                 o.status = "done_for_day"
             else
-                o.canceled_at = get_clock(m)
-                o.status = "canceled"
+                cancel_order!(b, o)
             end
         end
     end
@@ -114,6 +129,6 @@ function tick!(b::SingleAccountBrokerage)
         end
     end
     if !is_open(b.market)
-        cleanup_orders!(b.account.orders, b.market)
+        cleanup_orders!(b, b.account.orders)
     end
 end
