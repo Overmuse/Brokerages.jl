@@ -21,6 +21,8 @@ import TradingBase:
     get_positions,
     get_orders,
     submit_order,
+    get_last,
+    get_historical,
     cash,
     id,
     type,
@@ -37,6 +39,8 @@ export
     Order,
     get_account,
     get_positions,
+    get_last,
+    get_historical,
     get_orders,
     submit_order,
     tick!

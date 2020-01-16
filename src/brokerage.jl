@@ -6,6 +6,8 @@ end
 get_account(b::SingleAccountBrokerage) = b.account
 get_orders(b::SingleAccountBrokerage) = get_orders(b.account)
 get_positions(b::SingleAccountBrokerage) = get_positions(b.account)
+get_last(b::SingleAccountBrokerage, args...) = get_last(b.market, args...)
+get_historical(b::SingleAccountBrokerage, args...) = get_historical(b.market, args...)
 
 function merge_positions(p1, p2)
     cost_basis = p1.cost_basis + p2.cost_basis
