@@ -8,7 +8,7 @@ mutable struct Order <: AbstractOrder
     quantity
     filled_quantity
     type
-    time_in_force
+    duration
     limit_price
     stop_price
     filled_average_price
@@ -16,3 +16,4 @@ mutable struct Order <: AbstractOrder
 end
 
 is_filled(o::Order) = o.filled_quantity == o.quantity
+status(o::AbstractOrder) = o.status

@@ -27,8 +27,9 @@ import TradingBase:
     duration,
     quantity,
     limit_price,
-    stop_price
-import Markets: AbstractMarket, SinglePriceMarket, get_clock, get_price, is_open, tick!
+    stop_price,
+    symbol
+import Markets: Markets, AbstractMarket, Market, get_clock, get_price, is_open, tick!
 
 export
     BrokerageAccount,

@@ -41,7 +41,7 @@ function add_position_from_order!(b::SingleAccountBrokerage, o::Order)
 end
 
 function cancel_order!(b::AbstractBrokerage, o::Order)
-    o.canceled_at = get_clock(m)
+    o.canceled_at = get_clock(b.market)
     o.status = "canceled"
 end
 
@@ -103,32 +103,31 @@ function submit_order(b::SingleAccountBrokerage, oi::OrderIntent)
         "new"
     )
     push!(get_orders(b), o)
-    transmit_order!(o, b.market)
+    if is_open(b.market)
+        transmit_order!(o, b.market)
+    end
     process_order!(b, o)
     return o
 end
 
 function cleanup_orders!(b::AbstractBrokerage, os::Vector{Order})
     for o in os
-        if o.status ∉ ["filled", "canceled", "expired"]
-            if o.time_in_force == GTC
-                o.status = "done_for_day"
-            else
-                cancel_order!(b, o)
-            end
+        if o.status ∉ ["filled", "canceled", "expired"] && duration(o) != GTC()
+            cancel_order!(b, o)
         end
     end
 end
 
 function tick!(b::SingleAccountBrokerage)
     tick!(b.market)
-    for order in get_orders(b)
-        if !is_filled(order)
-            transmit_order!(order, b.market)
-            process_order!(b, order)
+    if is_open(b.market)
+        for order in get_orders(b)
+            if !is_filled(order)
+                transmit_order!(order, b.market)
+                process_order!(b, order)
+            end
         end
-    end
-    if !is_open(b.market)
+    elseif b.market.market_state[] == Markets.MarketState(2)
         cleanup_orders!(b, b.account.orders)
     end
 end
