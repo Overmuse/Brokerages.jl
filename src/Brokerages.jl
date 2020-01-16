@@ -21,8 +21,6 @@ import TradingBase:
     get_positions,
     get_orders,
     submit_order,
-    get_last,
-    get_historical,
     cash,
     id,
     type,
@@ -31,7 +29,7 @@ import TradingBase:
     limit_price,
     stop_price,
     symbol
-import Markets: Markets, AbstractMarket, Market, get_clock, get_price, is_open, tick!
+import Markets: Markets, AbstractMarket, Market, get_clock, get_current, get_last, get_historical, is_open, tick!
 
 export
     BrokerageAccount,

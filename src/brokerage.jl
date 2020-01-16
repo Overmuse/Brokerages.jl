@@ -56,7 +56,7 @@ end
 function execute_order!(o::AbstractOrder, m::AbstractMarket)
     o.filled_at = get_clock(m)
     o.filled_quantity = quantity(o)
-    o.filled_average_price = get_price(m, o.symbol)
+    o.filled_average_price = get_current(m, o.symbol)
     o.status = "filled"
 end
 
@@ -65,8 +65,8 @@ function transmit_order!(o::AbstractOrder, ::MarketOrder, m::AbstractMarket)
 end
 
 function transmit_order!(o::AbstractOrder, ::LimitOrder, m::AbstractMarket)
-    if (quantity(o) > 0 && get_price(m, symbol(o)) <= limit_price(o)) ||
-        (quantity(o) < 0 && get_price(m, symbol(o)) >= limit_price(o))
+    if (quantity(o) > 0 && get_current(m, symbol(o)) <= limit_price(o)) ||
+        (quantity(o) < 0 && get_current(m, symbol(o)) >= limit_price(o))
         execute_order!(o, m)
     elseif duration(o) in [FOK, IOC]
         cancel!(o)
@@ -74,8 +74,8 @@ function transmit_order!(o::AbstractOrder, ::LimitOrder, m::AbstractMarket)
 end
 
 function transmit_order!(o::AbstractOrder, ::StopOrder, m::AbstractMarket)
-    if (quantity(o) > 0 && get_price(m, symbol(o)) >= limit_price(o)) ||
-        (quantity(o) < 0 && get_price(m, symbol(o)) <= limit_price(o))
+    if (quantity(o) > 0 && get_current(m, symbol(o)) >= limit_price(o)) ||
+        (quantity(o) < 0 && get_current(m, symbol(o)) <= limit_price(o))
         execute_order!(o, m)
     elseif duration(o) in [FOK, IOC]
         cancel!(o)
