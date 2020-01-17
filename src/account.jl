@@ -7,7 +7,6 @@ end
 
 get_orders(ba::BrokerageAccount) = ba.orders
 get_positions(ba::BrokerageAccount) = ba.positions
-get_equity(ba::BrokerageAccount) = get_positions_value(ba) + ba.cash
 
 function delete_position!(ba::BrokerageAccount, ticker)
     for (i, p) in enumerate(ba.positions)
@@ -25,3 +24,5 @@ function get_positions_value(ba::BrokerageAccount)
     end
     value
 end
+
+get_equity(ba::BrokerageAccount) = get_positions_value(ba) + ba.cash
