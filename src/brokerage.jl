@@ -12,7 +12,7 @@ function get_positions_value(b::SingleAccountBrokerage)
     value = 0.0
     positions = get_positions(b)
     for position in positions
-        value += get_current(b.market, position) * position.quantity
+        value += get_current(b.market, position.symbol) * position.quantity
     end
     value
 end
@@ -42,11 +42,10 @@ function add_position_from_order!(b::SingleAccountBrokerage, o::Order)
         o.filled_average_price * o.filled_quantity
     )
     b.account.cash -= p.cost_basis
-    for (i, p2) in enumerate(current_positions)
-        if p.symbol == p2.symbol
-            delete_position!(b.account, p.symbol)
-            p = merge_positions(p, p2)
-        end
+    if symbol(p) in symbol.(current_positions)
+        p2 = current_positions[symbol(p) .== symbol.(current_positions)][]
+        delete_position!(b.account, symbol(p))
+        p = merge_positions(p, p2)
     end
     !isnothing(p) && push!(b.account.positions, p)
 end
