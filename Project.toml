@@ -1,7 +1,7 @@
 name = "Brokerages"
 uuid = "17266b6e-feb9-49b2-89f6-6dff26db6053"
 authors = ["Sebastian Rollen <sebastian.rollen@betterment.com>"]
-version = "0.1.5"
+version = "0.1.6"
 
 [deps]
 Markets = "e289261d-1a32-4d56-985b-5cdfc675b408"
