@@ -41,6 +41,7 @@ export
     get_last,
     get_historical,
     get_orders,
+    get_equity,
     submit_order,
     tick!
 
