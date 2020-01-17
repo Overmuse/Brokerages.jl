@@ -20,6 +20,7 @@ import TradingBase:
     get_account,
     get_positions,
     get_orders,
+    get_equity,
     submit_order,
     cash,
     id,
