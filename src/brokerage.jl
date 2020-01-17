@@ -8,6 +8,15 @@ get_orders(b::SingleAccountBrokerage) = get_orders(b.account)
 get_positions(b::SingleAccountBrokerage) = get_positions(b.account)
 get_last(b::SingleAccountBrokerage, args...) = get_last(b.market, args...)
 get_historical(b::SingleAccountBrokerage, args...) = get_historical(b.market, args...)
+function get_positions_value(b::SingleAccountBrokerage)
+    value = 0.0
+    positions = get_positions(b)
+    for position in positions
+        value += get_current(b.market, position) * position.quantity
+    end
+    value
+end
+
 
 function merge_positions(p1, p2)
     cost_basis = p1.cost_basis + p2.cost_basis
@@ -122,6 +131,7 @@ end
 
 function tick!(b::SingleAccountBrokerage)
     tick!(b.market)
+    get_account(b).equity = get_positions_value(b) + get_account(b).cash
     if is_open(b.market)
         for order in get_orders(b)
             if !is_filled(order)

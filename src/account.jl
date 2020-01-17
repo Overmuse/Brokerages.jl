@@ -3,6 +3,7 @@ mutable struct BrokerageAccount <: AbstractAccount
     orders
     positions
     cash
+    equity
 end
 
 get_orders(ba::BrokerageAccount) = ba.orders
@@ -16,13 +17,5 @@ function delete_position!(ba::BrokerageAccount, ticker)
     end
 end
 
-function get_positions_value(ba::BrokerageAccount)
-    value = 0.0
-    positions = get_positions(ba)
-    for position in positions
-        value += get_current(ba.market, position) * position.quantity
-    end
-    value
-end
-
-get_equity(ba::BrokerageAccount) = get_positions_value(ba) + ba.cash
+get_equity(ba::BrokerageAccount) = ba.equity
+get_market_value(b::BrokerageAccount, p::Position) = get_last(b, p.symbol) * p.quantity
