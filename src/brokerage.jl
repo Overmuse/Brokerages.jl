@@ -51,6 +51,7 @@ function add_position_from_order!(b::SingleAccountBrokerage, o::Order)
 end
 
 function cancel_order!(b::AbstractBrokerage, o::Order)
+    @debug "Cancelling order: " o
     o.canceled_at = get_clock(b.market)
     o.status = "canceled"
 end
@@ -62,6 +63,7 @@ function process_order!(b::AbstractBrokerage, o::Order)
 end
 
 function execute_order!(o::AbstractOrder, m::AbstractMarket)
+    @debug "Executing order: " o
     o.filled_at = get_clock(m)
     o.filled_quantity = quantity(o)
     o.filled_average_price = get_current(m, o.symbol)
@@ -75,6 +77,7 @@ end
 function transmit_order!(o::AbstractOrder, ::LimitOrder, m::AbstractMarket)
     if (quantity(o) > 0 && get_current(m, symbol(o)) <= limit_price(o)) ||
         (quantity(o) < 0 && get_current(m, symbol(o)) >= limit_price(o))
+        @debug "Limit price hit"
         execute_order!(o, m)
     elseif duration(o) in [FOK, IOC]
         cancel!(o)
@@ -84,6 +87,7 @@ end
 function transmit_order!(o::AbstractOrder, ::StopOrder, m::AbstractMarket)
     if (quantity(o) > 0 && get_current(m, symbol(o)) >= limit_price(o)) ||
         (quantity(o) < 0 && get_current(m, symbol(o)) <= limit_price(o))
+        @debug "Stop price hit"
         execute_order!(o, m)
     elseif duration(o) in [FOK, IOC]
         cancel!(o)
@@ -91,6 +95,7 @@ function transmit_order!(o::AbstractOrder, ::StopOrder, m::AbstractMarket)
 end
 
 function transmit_order!(o::AbstractOrder, m::AbstractMarket)
+    @debug "Transmitting order: " o
     transmit_order!(o, type(o), m)
 end
 
@@ -112,8 +117,10 @@ function submit_order(b::SingleAccountBrokerage, oi::OrderIntent)
         nothing,
         "new"
     )
+    @debug "Submitting order: " o
     push!(get_orders(b), o)
     if is_open(b.market)
+        @debug "Market open, transmitting order"
         transmit_order!(o, b.market)
     end
     process_order!(b, o)
@@ -123,6 +130,7 @@ end
 function cleanup_orders!(b::AbstractBrokerage, os::Vector{Order})
     for o in os
         if o.status ∉ ["filled", "canceled", "expired"] && duration(o) != GTC()
+            @debug "Order cancelled: " o
             cancel_order!(b, o)
         end
     end
