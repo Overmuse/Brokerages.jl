@@ -10,6 +10,7 @@ import TradingBase:
     LimitOrder,
     StopOrder,
     OrderIntent,
+    AbstractOrderDuration,
     DAY,
     GTC,
     OPG,

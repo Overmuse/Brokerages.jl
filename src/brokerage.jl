@@ -6,17 +6,23 @@ end
 get_account(b::SingleAccountBrokerage) = b.account
 get_orders(b::SingleAccountBrokerage) = get_orders(b.account)
 get_positions(b::SingleAccountBrokerage) = get_positions(b.account)
+delete_position!(b::SingleAccountBrokerage, ticker) = delete_position!(b.account, ticker)
+get_equity(b::SingleAccountBrokerage) = get_equity(b.account)
 get_last(b::SingleAccountBrokerage, args...) = get_last(b.market, args...)
 get_historical(b::SingleAccountBrokerage, args...) = get_historical(b.market, args...)
 function get_positions_value(b::SingleAccountBrokerage)
     value = 0.0
     positions = get_positions(b)
     for position in positions
-        value += get_current(b.market, position.symbol) * position.quantity
+        current_value = get_current(b.market, position.symbol)
+        if !ismissing(current_value)
+            value += current_value * position.quantity
+        else
+            value += get_last(b.market, position.symbol) * position.quantity
+        end
     end
     value
 end
-
 
 function merge_positions(p1, p2)
     cost_basis = p1.cost_basis + p2.cost_basis
@@ -97,6 +103,17 @@ end
 function transmit_order!(o::AbstractOrder, m::AbstractMarket)
     @debug "Transmitting order: " o
     transmit_order!(o, type(o), m)
+end
+
+function submit_order(b::SingleAccountBrokerage, ticker, quantity::Integer, type; duration::AbstractOrderDuration = DAY(), client_order_id = nothing)
+    oi = OrderIntent(
+        something(client_order_id, uuid4()),
+        ticker,
+        type,
+        duration,
+        quantity
+    )
+    submit_order(b, oi)
 end
 
 function submit_order(b::SingleAccountBrokerage, oi::OrderIntent)
