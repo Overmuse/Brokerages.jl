@@ -47,6 +47,7 @@ export
     tick!
 
 include("order.jl")
+include("commission.jl")
 include("position.jl")
 include("account.jl")
 include("brokerage.jl")

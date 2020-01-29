@@ -1,6 +1,7 @@
 struct SingleAccountBrokerage <: AbstractBrokerage
-    account :: BrokerageAccount
-    market  :: AbstractMarket
+    account    :: BrokerageAccount
+    market     :: AbstractMarket
+    commission :: AbstractCommission
 end
 
 get_account(b::SingleAccountBrokerage) = b.account
@@ -10,6 +11,7 @@ delete_position!(b::SingleAccountBrokerage, ticker) = delete_position!(b.account
 get_equity(b::SingleAccountBrokerage) = get_equity(b.account)
 get_last(b::SingleAccountBrokerage, args...) = get_last(b.market, args...)
 get_historical(b::SingleAccountBrokerage, args...) = get_historical(b.market, args...)
+get_commission(b::SingleAccountBrokerage) = b.commission
 function get_positions_value(b::SingleAccountBrokerage)
     value = 0.0
     positions = get_positions(b)
@@ -47,7 +49,7 @@ function add_position_from_order!(b::SingleAccountBrokerage, o::Order)
         o.filled_quantity,
         o.filled_average_price * o.filled_quantity
     )
-    b.account.cash -= p.cost_basis
+    b.account.cash -= (p.cost_basis + calculate(get_commission(b), o))
     if symbol(p) in symbol.(current_positions)
         p2 = current_positions[symbol(p) .== symbol.(current_positions)][]
         delete_position!(b.account, symbol(p))
