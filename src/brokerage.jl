@@ -12,6 +12,7 @@ get_equity(b::SingleAccountBrokerage) = get_equity(b.account)
 get_last(b::SingleAccountBrokerage, args...) = get_last(b.market, args...)
 get_historical(b::SingleAccountBrokerage, args...) = get_historical(b.market, args...)
 get_commission(b::SingleAccountBrokerage) = b.commission
+get_clock(b::SingleAccountBrokerage) = get_clock(b.market)
 function get_positions_value(b::SingleAccountBrokerage)
     value = 0.0
     positions = get_positions(b)

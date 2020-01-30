@@ -38,6 +38,7 @@ export
     SingleAccountBrokerage,
     Order,
     get_account,
+    get_clock,
     get_positions,
     get_last,
     get_historical,
