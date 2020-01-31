@@ -142,6 +142,8 @@ function submit_order(b::SingleAccountBrokerage, oi::OrderIntent)
     if is_open(b.market)
         @debug "Market open, transmitting order"
         transmit_order!(o, b.market)
+    elseif o.type isa MarketOrder
+        cancel_order!(b, o)
     end
     process_order!(b, o)
     return o
@@ -166,7 +168,7 @@ function tick!(b::SingleAccountBrokerage)
                 process_order!(b, order)
             end
         end
-    elseif b.market.market_state[] == Markets.MarketState(2)
+    elseif b.market.market_state[] == Markets.Closed
         cleanup_orders!(b, b.account.orders)
     end
 end
