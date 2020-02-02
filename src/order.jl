@@ -12,6 +12,7 @@ mutable struct Order <: AbstractOrder
     limit_price
     stop_price
     filled_average_price
+    commission
     status
 end
 
