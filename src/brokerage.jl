@@ -6,6 +6,7 @@ end
 
 get_account(b::SingleAccountBrokerage) = b.account
 get_orders(b::SingleAccountBrokerage) = get_orders(b.account)
+get_position(b::SingleAccountBrokerage, symbol) = get_position(b.account, symbol)
 get_positions(b::SingleAccountBrokerage) = get_positions(b.account)
 delete_position!(b::SingleAccountBrokerage, ticker) = delete_position!(b.account, ticker)
 get_equity(b::SingleAccountBrokerage) = get_equity(b.account)
@@ -13,6 +14,16 @@ get_last(b::SingleAccountBrokerage, args...) = get_last(b.market, args...)
 get_historical(b::SingleAccountBrokerage, args...) = get_historical(b.market, args...)
 get_commission(b::SingleAccountBrokerage) = b.commission
 get_clock(b::SingleAccountBrokerage) = get_clock(b.market)
+function close_position(b::SingleAccountBrokerage, symbol)
+    position = get_position(b, symbol)
+    submit_order(b, position.symbol, -position.quantity, MarketOrder())
+end
+function close_positions(b::SingleAccountBrokerage)
+    positions = copy(get_positions(b))
+    for position in positions
+        submit_order(b, position.symbol, -position.quantity, MarketOrder())
+    end
+end
 function get_positions_value(b::SingleAccountBrokerage)
     value = 0.0
     positions = get_positions(b)
@@ -141,7 +152,7 @@ function submit_order(b::SingleAccountBrokerage, oi::OrderIntent)
     )
     @debug "Submitting order: " o
     push!(get_orders(b), o)
-    if is_open(b.market)
+    if is_opening(b.market) || is_open(b.market) || is_closing(b.market)
         @debug "Market open, transmitting order"
         transmit_order!(b, o)
     elseif o.type isa MarketOrder

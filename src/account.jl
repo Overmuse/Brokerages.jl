@@ -7,6 +7,7 @@ mutable struct BrokerageAccount <: AbstractAccount
 end
 
 get_orders(ba::BrokerageAccount) = ba.orders
+get_position(ba::BrokerageAccount, symbol) = filter(x -> x.symbol == symbol, ba.positions)
 get_positions(ba::BrokerageAccount) = ba.positions
 
 function delete_position!(ba::BrokerageAccount, ticker)

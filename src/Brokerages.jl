@@ -19,7 +19,10 @@ import TradingBase:
     FOK,
 
     get_account,
+    get_position,
     get_positions,
+    close_position,
+    close_positions,
     get_orders,
     get_equity,
     submit_order,
@@ -31,7 +34,20 @@ import TradingBase:
     limit_price,
     stop_price,
     symbol
-import Markets: Markets, AbstractMarket, Market, get_clock, get_current, get_last, get_historical, is_open, tick!
+import Markets:
+    Markets,
+    AbstractMarket,
+    Market,
+    get_clock,
+    get_current,
+    get_last,
+    get_historical,
+    is_preopen,
+    is_opening,
+    is_open,
+    is_closing,
+    is_closed,
+    tick!
 
 export
     BrokerageAccount,
@@ -39,7 +55,10 @@ export
     Order,
     get_account,
     get_clock,
+    get_position,
     get_positions,
+    close_position,
+    close_positions,
     get_last,
     get_historical,
     get_orders,
