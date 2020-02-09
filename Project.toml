@@ -8,3 +8,8 @@ Markets = "e289261d-1a32-4d56-985b-5cdfc675b408"
 Polygon = "6c90dff6-b80f-4bd2-aa9c-319c6ebead32"
 TradingBase = "1e56c13b-5444-4379-9737-7aa7ad39eab5"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
+
+[compat]
+Markets = "0.5"
+Polygon = "1.0"
+TradingBase = "0.1.6"
