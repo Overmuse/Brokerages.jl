@@ -96,8 +96,8 @@ function transmit_order!(o::AbstractOrder, ::MarketOrder, b::AbstractBrokerage)
 end
 
 function transmit_order!(o::AbstractOrder, ::LimitOrder, b::AbstractBrokerage)
-    if (quantity(o) > 0 && get_current(b, symbol(o)) <= limit_price(o)) ||
-        (quantity(o) < 0 && get_current(b, symbol(o)) >= limit_price(o))
+    if (quantity(o) > 0 && get_current(b.market, symbol(o)) <= limit_price(o)) ||
+        (quantity(o) < 0 && get_current(b.market, symbol(o)) >= limit_price(o))
         @debug "Limit price hit"
         execute_order!(b, o)
     elseif duration(o) in [FOK, IOC]

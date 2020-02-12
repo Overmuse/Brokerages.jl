@@ -19,6 +19,7 @@ import TradingBase:
     FOK,
 
     get_account,
+    get_clock,
     get_position,
     get_positions,
     close_position,
@@ -38,7 +39,6 @@ import Markets:
     Markets,
     AbstractMarket,
     Market,
-    get_clock,
     get_current,
     get_last,
     get_historical,
