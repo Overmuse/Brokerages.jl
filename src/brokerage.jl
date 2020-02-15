@@ -168,6 +168,14 @@ function cleanup_orders!(b::AbstractBrokerage, os::Vector{Order})
             @debug "Order cancelled: " o
             cancel_order!(b, o)
         end
+        if o.status != "new"
+            push!(b.account.inactive_orders, o)
+            for (i, o2) in enumerate(get_orders(b))
+                if o.id == o2.id
+                    deleteat!(get_orders(b), i)
+                end
+            end
+        end
     end
 end
 
@@ -182,6 +190,6 @@ function tick!(b::SingleAccountBrokerage)
             end
         end
     elseif b.market.market_state[] == Markets.Closed
-        cleanup_orders!(b, b.account.orders)
+        cleanup_orders!(b, get_orders(b))
     end
 end

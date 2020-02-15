@@ -1,12 +1,13 @@
 mutable struct BrokerageAccount <: AbstractAccount
     id
-    orders
+    active_orders
+    inactive_orders
     positions
     cash
     equity
 end
 
-get_orders(ba::BrokerageAccount) = ba.orders
+get_orders(ba::BrokerageAccount) = ba.active_orders
 get_position(ba::BrokerageAccount, symbol) = filter(x -> x.symbol == symbol, ba.positions)
 get_positions(ba::BrokerageAccount) = ba.positions
 
