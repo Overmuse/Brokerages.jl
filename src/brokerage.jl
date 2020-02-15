@@ -1,7 +1,29 @@
-struct SingleAccountBrokerage <: AbstractBrokerage
+struct SingleAccountBrokerage{M, C} <: AbstractBrokerage where {M <: AbstractMarket, C <: AbstractCommission}
     account    :: BrokerageAccount
-    market     :: AbstractMarket
-    commission :: AbstractCommission
+    market     :: M
+    commission :: C
+end
+
+function SingleAccountBrokerage(
+    market :: AbstractMarket,
+    cash :: Float64;
+    commission = NoCommission()
+)
+    account = BrokerageAccount(
+        uuid4(),
+        Order[],
+        Order[],
+        Position[],
+        cash,
+        cash,
+        cash
+    )
+    SingleAccountBrokerage(account, market, commission)
+end
+
+function reset!(x::SingleAccountBrokerage)
+    reset!(x.account)
+    reset!(x.market)
 end
 
 get_account(b::SingleAccountBrokerage) = b.account

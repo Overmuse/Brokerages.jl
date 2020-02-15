@@ -47,6 +47,7 @@ import Markets:
     is_open,
     is_closing,
     is_closed,
+    reset!,
     tick!
 
 export
@@ -63,6 +64,7 @@ export
     get_historical,
     get_orders,
     get_equity,
+    reset!,
     submit_order,
     tick!
 
