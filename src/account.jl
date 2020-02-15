@@ -4,7 +4,7 @@ mutable struct BrokerageAccount <: AbstractAccount
     inactive_orders :: Vector{Order}
     positions :: Vector{Position}
     cash :: Float64
-    equity :: Float64,
+    equity :: Float64
     starting_cash :: Float64
 end
 
