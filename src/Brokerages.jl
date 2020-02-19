@@ -1,14 +1,18 @@
 module Brokerages
 
+using Dates: DateTime
 import UUIDs: UUID, uuid4
 import TradingBase:
     AbstractAccount,
     AbstractBrokerage,
     AbstractOrder,
+    AbstractOrderType,
+    AbstractOrderDuration,
     AbstractPosition,
     MarketOrder,
     LimitOrder,
     StopOrder,
+    StopLimitOrder,
     OrderIntent,
     AbstractOrderDuration,
     DAY,

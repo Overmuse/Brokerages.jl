@@ -1,19 +1,19 @@
-mutable struct Order <: AbstractOrder
-    id
-    submitted_at
-    filled_at
-    canceled_at
-    failed_at
-    symbol
-    quantity
-    filled_quantity
-    type
-    duration
-    limit_price
-    stop_price
-    filled_average_price
-    commission
-    status
+mutable struct Order{O <: AbstractOrderType, D <: AbstractOrderDuration} <: AbstractOrder
+    id::UUID
+    submitted_at::DateTime
+    filled_at::Union{DateTime, Nothing}
+    canceled_at::Union{DateTime, Nothing}
+    failed_at::Union{DateTime, Nothing}
+    symbol::String
+    quantity::Int
+    filled_quantity::Int
+    type::O
+    duration::D
+    limit_price::Union{Float64, Nothing}
+    stop_price::Union{Float64, Nothing}
+    filled_average_price::Union{Float64, Nothing}
+    commission::Union{Float64, Nothing}
+    status::String
 end
 
 is_filled(o::Order) = o.filled_quantity == o.quantity

@@ -38,7 +38,7 @@ get_commission(b::SingleAccountBrokerage) = b.commission
 get_clock(b::SingleAccountBrokerage) = get_clock(b.market)
 function close_position(b::SingleAccountBrokerage, symbol)
     position = get_position(b, symbol)
-    submit_order(b, position.symbol, -position.quantity, MarketOrder())
+    submit_order(b, symbol, -position.quantity, MarketOrder())
 end
 function close_positions(b::SingleAccountBrokerage)
     positions = copy(get_positions(b))
@@ -111,35 +111,56 @@ function execute_order!(b::AbstractBrokerage, o::AbstractOrder)
     o.filled_average_price = get_current(b.market, o.symbol)
     o.status = "filled"
     o.commission = calculate(get_commission(b), o)
+    #o.slippage = calculate(get_slippage(b), o)
 end
 
-function transmit_order!(o::AbstractOrder, ::MarketOrder, b::AbstractBrokerage)
-    execute_order!(b, o)
+function should_execute(o::Order{MarketOrder, <:Any}, b::AbstractBrokerage)
+    is_opening(b.market) || is_open(b.market) || is_closing(b.market)
 end
 
-function transmit_order!(o::AbstractOrder, ::LimitOrder, b::AbstractBrokerage)
-    if (quantity(o) > 0 && get_current(b.market, symbol(o)) <= limit_price(o)) ||
-        (quantity(o) < 0 && get_current(b.market, symbol(o)) >= limit_price(o))
-        @debug "Limit price hit"
-        execute_order!(b, o)
-    elseif duration(o) in [FOK, IOC]
-        cancel!(o)
+function limit_price_triggered(b::AbstractBrokerage, o::Order)
+    if quantity(o) > 0
+        get_current(b.market, symbol(o)) <= limit_price(o)
+    else
+        get_current(b.market, symbol(o)) >= limit_price(o)
     end
 end
 
-function transmit_order!(o::AbstractOrder, ::StopOrder, b::AbstractBrokerage)
-    if (quantity(o) > 0 && get_current(b, symbol(o)) >= limit_price(o)) ||
-        (quantity(o) < 0 && get_current(b, symbol(o)) <= limit_price(o))
-        @debug "Stop price hit"
-        execute_order!(b, o)
-    elseif duration(o) in [FOK, IOC]
-        cancel!(o)
+function stop_price_triggered(b::AbstractBrokerage, o::Order)
+    if quantity(o) > 0
+        get_current(b.market, symbol(o)) >= stop_price(o)
+    else
+        get_current(b.market, symbol(o)) <= stop_price(o)
     end
+end
+
+function should_execute(o::Order{LimitOrder, OPG}, b::AbstractBrokerage)
+    is_opening(b.market) && limit_price_triggered(o, b)
+end
+
+function should_execute(o::Order{LimitOrder, CLS}, b::AbstractBrokerage)
+    is_closing(b.market) && limit_price_triggered(o, b)
+end
+
+function should_execute(o::Order{LimitOrder, <:Any}, b::AbstractBrokerage)
+    is_open(b.market) && limit_price_triggered(b, o)
+end
+
+function should_execute(o::Order{StopOrder, <:Any}, b::AbstractBrokerage)
+    is_open(b.market) && stop_price_triggered(b, o)
+end
+
+function should_execute(o::Order{StopLimitOrder, <:Any}, b::AbstractBrokerage)
+    is_open(b.market) && limit_price_triggered(b, o) && stop_price_triggered(b, o)
 end
 
 function transmit_order!(b::AbstractBrokerage, o::AbstractOrder)
     @debug "Transmitting order: " o
-    transmit_order!(o, type(o), b)
+    if should_execute(o, b)
+        execute_order!(b, o)
+    elseif duration(o) in [FOK, IOC]
+        cancel!(o)
+    end
 end
 
 function submit_order(b::SingleAccountBrokerage, ticker, quantity::Integer, type; duration::AbstractOrderDuration = DAY(), client_order_id = nothing)
@@ -204,14 +225,14 @@ end
 function tick!(b::SingleAccountBrokerage)
     tick!(b.market)
     get_account(b).equity = get_positions_value(b) + get_account(b).cash
-    if is_open(b.market)
+    if is_opening(b.market) || is_open(b.market) || is_closing(b.market)
         for order in get_orders(b)
             if !is_filled(order)
                 transmit_order!(b, order)
                 process_order!(b, order)
             end
         end
-    elseif b.market.market_state[] == Markets.Closed
+    elseif is_closed(b.market)
         cleanup_orders!(b, get_orders(b))
     end
 end
