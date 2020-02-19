@@ -135,11 +135,11 @@ function stop_price_triggered(b::AbstractBrokerage, o::Order)
 end
 
 function should_execute(o::Order{LimitOrder, OPG}, b::AbstractBrokerage)
-    is_opening(b.market) && limit_price_triggered(o, b)
+    is_opening(b.market) && limit_price_triggered(b, o)
 end
 
 function should_execute(o::Order{LimitOrder, CLS}, b::AbstractBrokerage)
-    is_closing(b.market) && limit_price_triggered(o, b)
+    is_closing(b.market) && limit_price_triggered(b, o)
 end
 
 function should_execute(o::Order{LimitOrder, <:Any}, b::AbstractBrokerage)
