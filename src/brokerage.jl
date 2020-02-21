@@ -1,13 +1,15 @@
-struct SingleAccountBrokerage{M, C} <: AbstractBrokerage where {M <: AbstractMarket, C <: AbstractCommission}
+struct SingleAccountBrokerage{M, C, S} <: AbstractBrokerage where {M <: AbstractMarket, C <: AbstractCommission, S <: AbstractSlippage}
     account    :: BrokerageAccount
     market     :: M
     commission :: C
+    slippage   :: S
 end
 
 function SingleAccountBrokerage(
     market :: AbstractMarket,
     cash :: Float64;
-    commission = NoCommission()
+    commission = NoCommission(),
+    slippage = VolumeShareSlippage(0.25, 0.1)
 )
     account = BrokerageAccount(
         uuid4(),
@@ -18,7 +20,7 @@ function SingleAccountBrokerage(
         cash,
         cash
     )
-    SingleAccountBrokerage(account, market, commission)
+    SingleAccountBrokerage(account, market, commission, slippage)
 end
 
 function reset!(x::SingleAccountBrokerage)
@@ -35,6 +37,7 @@ get_equity(b::SingleAccountBrokerage) = get_equity(b.account)
 get_last(b::SingleAccountBrokerage, args...) = get_last(b.market, args...)
 get_historical(b::SingleAccountBrokerage, args...) = get_historical(b.market, args...)
 get_commission(b::SingleAccountBrokerage) = b.commission
+get_slippage(b::SingleAccountBrokerage) = b.slippage
 get_clock(b::SingleAccountBrokerage) = get_clock(b.market)
 function close_position(b::SingleAccountBrokerage, symbol)
     position = get_position(b, symbol)
@@ -104,14 +107,21 @@ function process_order!(b::AbstractBrokerage, o::Order)
     end
 end
 
-function execute_order!(b::AbstractBrokerage, o::AbstractOrder)
+function execute_order!(b::AbstractBrokerage, o::Order)
     @debug "Executing order: " o
+    volume = m.prices[o.symbol][get_clock(b)].volume
+    volume_share = o.quantity / volume
+    slippage = calculate(get_slippage(b), volume_share)
+    if quantity(o) > 0
+        price = get_current(b.market, o.symbol) * (1 + slippage)
+    else
+        price = get_current(b.market, o.symbol) * (1 - slippage)
+    end
     o.filled_at = get_clock(b)
     o.filled_quantity = quantity(o)
-    o.filled_average_price = get_current(b.market, o.symbol)
+    o.filled_average_price = price
     o.status = "filled"
     o.commission = calculate(get_commission(b), o)
-    #o.slippage = calculate(get_slippage(b), o)
 end
 
 function should_execute(o::Order{MarketOrder, <:Any}, b::AbstractBrokerage)

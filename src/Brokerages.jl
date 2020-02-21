@@ -74,6 +74,7 @@ export
 
 include("order.jl")
 include("commission.jl")
+include("slippage.jl")
 include("position.jl")
 include("account.jl")
 include("brokerage.jl")
