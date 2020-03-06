@@ -13,6 +13,7 @@ import TradingBase:
     LimitOrder,
     StopOrder,
     StopLimitOrder,
+    Order,
     OrderIntent,
     AbstractOrderDuration,
     DAY,
@@ -28,6 +29,8 @@ import TradingBase:
     get_positions,
     close_position,
     close_positions,
+    is_filled,
+    status,
     get_orders,
     get_equity,
     submit_order,
@@ -57,7 +60,6 @@ import Markets:
 export
     BrokerageAccount,
     SingleAccountBrokerage,
-    Order,
     get_account,
     get_clock,
     get_position,
@@ -72,7 +74,6 @@ export
     submit_order,
     tick!
 
-include("order.jl")
 include("commission.jl")
 include("slippage.jl")
 include("position.jl")

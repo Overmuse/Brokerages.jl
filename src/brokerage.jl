@@ -109,18 +109,24 @@ end
 
 function execute_order!(b::AbstractBrokerage, o::Order)
     @debug "Executing order: " o
-    volume = m.prices[o.symbol][get_clock(b)].volume
-    volume_share = o.quantity / volume
+    volume = b.market.prices[o.symbol][get_clock(b)].volume
+    volume_share = min(o.quantity / volume, 1)
     slippage = calculate(get_slippage(b), volume_share)
     if quantity(o) > 0
         price = get_current(b.market, o.symbol) * (1 + slippage)
     else
         price = get_current(b.market, o.symbol) * (1 - slippage)
     end
-    o.filled_at = get_clock(b)
-    o.filled_quantity = quantity(o)
+    if volume_share < 1
+        o.filled_at = get_clock(b)
+        o.filled_quantity = quantity(o)
+        o.status = "filled"
+    else
+        o.filled_at = get_clock(b)
+        o.filled_quantity = volume
+        o.status = "partially_filled"
+    end
     o.filled_average_price = price
-    o.status = "filled"
     o.commission = calculate(get_commission(b), o)
 end
 
