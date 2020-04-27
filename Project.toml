@@ -11,4 +11,4 @@ UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [compat]
 Markets = "0.5, 0.6"
-TradingBase = "0.2, 0.3"
+TradingBase = "0.2, 0.3, 0.4"
